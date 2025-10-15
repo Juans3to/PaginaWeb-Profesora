@@ -6,7 +6,7 @@ if ($id === '') {
     exit;
 }
 
-$url = "http://localhost:3002/productos/$id";
+$url = "http://almacen_microproductos:3002/productos/$id";
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");

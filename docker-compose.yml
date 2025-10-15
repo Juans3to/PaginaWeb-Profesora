@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # --- BASES DE DATOS ---
+  usuariosdb:
+    build:
+      context: ./databases/usuariosdb
+      dockerfile: Dockerfile
+    image: juans3to/usuariosdb:latest 
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: almacenUsuarios
+      MYSQL_USER: juan
+      MYSQL_PASSWORD: juan123
+    volumes:
+      # Montaje del volumen persistente. Se crea en el nodo donde se ejecuta el servicio.
+      - usuarios_data:/var/lib/mysql
+    networks:
+      - appnet
+    deploy:
+      # Forzar la ejecución en Ubuntu1
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1
+      restart_policy:
+        condition: on-failure
+
+  productosdb:
+    build:
+      context: ./databases/productosdb
+      dockerfile: Dockerfile
+    image: juans3to/productosdb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: almacenProductos
+      MYSQL_USER: juan
+      MYSQL_PASSWORD: juan123
+    volumes:
+      - productos_data:/var/lib/mysql
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1
+      restart_policy:
+        condition: on-failure
+
+  ordenesdb:
+    build:
+      context: ./databases/ordenesdb
+      dockerfile: Dockerfile
+    image: juans3to/ordenesdb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: almacenOrdenes
+      MYSQL_USER: juan
+      MYSQL_PASSWORD: juan123
+    volumes:
+      - ordenes_data:/var/lib/mysql
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1
+      restart_policy:
+        condition: on-failure
+
+  # --- MICROSERVICIOS DE API (Backend) ---
+  microusuarios:
+    build:
+      context: ./usuarios
+      dockerfile: Dockerfile
+    image: juans3to/microusuarios:latest
+    depends_on:
+      - usuariosdb
+    # NO SE EXPONEN PUERTOS AQUI: HAProxy ya se encarga del enrutamiento
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1 # Asignar a un nodo para simplificar
+      restart_policy:
+        condition: on-failure
+
+  microproductos:
+    build:
+      context: ./productos
+      dockerfile: Dockerfile
+    image: juans3to/microproductos:latest
+    depends_on:
+      - productosdb
+    # NO SE EXPONEN PUERTOS AQUI
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1
+      restart_policy:
+        condition: on-failure
+
+  microordenes:
+    build:
+      context: ./ordenes
+      dockerfile: Dockerfile
+    image: juans3to/microordenes:latest
+    depends_on:
+      - ordenesdb
+    # NO SE EXPONEN PUERTOS AQUI
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu1
+      restart_policy:
+        condition: on-failure
+
+  # --- FRONTEND (microweb) ---
+  microweb:
+    build:
+      context: ./microWeb 
+      dockerfile: Dockerfile
+    image: juans3to/microweb:v1
+    depends_on:
+      - microusuarios # Dependencia para garantizar orden de inicio/arranque
+    networks:
+      - appnet
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu2
+      restart_policy:
+        condition: on-failure
+
+  # --- BALANCEADOR HAProxy (Gateway) ---
+  haproxy:
+    build:
+      context: ./haproxy
+      dockerfile: Dockerfile
+    image: juans3to/haproxyweb:latest
+    ports:
+      - "8080:80" # El único puerto expuesto al exterior
+    depends_on:
+      - microweb
+      - microusuarios # Depender de los servicios API también para orden de inicio
+    networks:
+      - appnet
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == servidorUbuntu2
+      restart_policy:
+        condition: on-failure
+
+# --- VOLUMENES ---
+volumes:
+  usuarios_data:
+  productos_data:
+    external: false
+  ordenes_data:
+
+# --- RED DE SWARM ---
+networks:
+  appnet:
+    external: true

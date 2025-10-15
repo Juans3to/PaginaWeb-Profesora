@@ -20,7 +20,7 @@ $json = json_encode($orden);
 //echo $json;
 
 
-$url = 'http://localhost:3003/ordenes';
+$url = 'http://almacen_microordenes:3003/ordenes';
 
 // Inicializar cURL
 $ch = curl_init();

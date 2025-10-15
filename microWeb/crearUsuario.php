@@ -5,7 +5,7 @@
     $pass=$_POST["password"];
 
     // URL de la solicitud POST
-    $url = 'http://localhost:3001/usuarios';
+    $url = 'http://almacen_microusuarios:3001/usuarios';
 
     // Datos que se enviarán en la solicitud POST
     $data = array(

@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS almacenOrdenes;
+
+CREATE TABLE IF NOT EXISTS almacenOrdenes.ordenes (
+  id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  nombreCliente VARCHAR(25),
+  emailCliente VARCHAR(100),
+  totalCuenta DECIMAL(10,2) NOT NULL,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP);
+

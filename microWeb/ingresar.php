@@ -11,7 +11,7 @@ if (empty($user) || empty($pass)) {
 }
 
 // Preparar la solicitud al microservicio
-$servurl = "http://localhost:3001/usuarios/$user/$pass";
+$servurl = "http://almacen_microusuarios:3001/usuarios/$user/$pass";
 $curl = curl_init($servurl);
 
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

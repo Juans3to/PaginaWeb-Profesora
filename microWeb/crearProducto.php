@@ -4,7 +4,7 @@
     $cantidad=$_POST["cantidad"];
     
     // URL de la solicitud POST
-    $url = 'http://localhost:3002/productos';
+    $url = 'http://almacen_microproductos:3002/productos';
 
     // Datos que se enviarán en la solicitud POST
     $data = array(

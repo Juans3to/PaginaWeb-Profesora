@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS usuarios (
+  nombre VARCHAR(100),
+  email VARCHAR(100) UNIQUE,
+  usuario VARCHAR(20) NOT NULL PRIMARY KEY,
+  password VARCHAR(255));
